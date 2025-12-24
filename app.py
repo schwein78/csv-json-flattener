@@ -51,13 +51,46 @@ def parse_obj(x: Any) -> Optional[Any]:
         return None
 
 
-def sniff_delimiter(text_sample: str) -> str:
-    """Best-effort delimiter detection."""
-    try:
-        dialect = csv.Sniffer().sniff(text_sample, delimiters=[",", "	", ";", "|", ":"])
-        return dialect.delimiter
-    except Exception:
+def detect_delimiter(text_sample: str) -> str:
+    """Detect a likely CSV delimiter.
+
+    NOTE: We intentionally do NOT consider ':' as a delimiter because JSON/Python-literal dicts contain many colons.
+    """
+    candidates = [",", "	", ";", "|"]
+
+    # Use a handful of lines; csv.reader will respect double-quoted fields.
+    lines = [ln for ln in text_sample.splitlines() if ln.strip()][:25]
+    if not lines:
         return ","
+
+    best_delim = ","
+    best_consistency = -1.0
+    best_cols = -1
+
+    for d in candidates:
+        try:
+            rdr = csv.reader(lines, delimiter=d, quotechar='"', doublequote=True)
+            counts = [len(row) for row in rdr]
+            if not counts:
+                continue
+
+            # Mode column count
+            mode_cols = max(set(counts), key=counts.count)
+            consistency = counts.count(mode_cols) / len(counts)
+
+            # Ignore delimiters that don't actually split the header/rows
+            if mode_cols <= 1:
+                continue
+
+            # Prefer higher consistency, then more columns
+            if (consistency > best_consistency) or (consistency == best_consistency and mode_cols > best_cols):
+                best_consistency = consistency
+                best_cols = mode_cols
+                best_delim = d
+        except Exception:
+            continue
+
+    return best_delim
 
 
 def maybe_decompress(file_bytes: bytes, filename: str) -> bytes:
@@ -82,7 +115,7 @@ def read_csv_cached(
     if delimiter_mode == "Auto":
         try:
             sample_text = raw[:64000].decode(encoding, errors="replace")
-            delim = sniff_delimiter(sample_text)
+            delim = detect_delimiter(sample_text)
         except Exception:
             delim = ","
     else:
@@ -96,6 +129,8 @@ def read_csv_cached(
         sep=delim,
         skiprows=int(skiprows),
         dtype=dtype,
+        quotechar='"',
+        engine="c",
     )
     return df, delim
 
@@ -347,5 +382,3 @@ with st.expander("Notes / Troubleshooting"):
         "- For very large files on Community Cloud, consider uploading `.csv.gz`.",
     ]
     st.markdown(chr(10).join(notes))
-
-
