@@ -346,6 +346,6 @@ with st.expander("Notes / Troubleshooting"):
         "- For list columns (like `surfaced_articles`), widening can create many columns quickly—use **Max items** to cap width.",
         "- For very large files on Community Cloud, consider uploading `.csv.gz`.",
     ]
-    st.markdown("
-".join(notes))
+    st.markdown(chr(10).join(notes))
+
 
