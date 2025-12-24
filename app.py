@@ -329,8 +329,8 @@ st.dataframe(flat.head(50), use_container_width=True)
 
 st.subheader("Download")
 filename = st.text_input("Output filename", value="flattened_wide.csv")
-csv_bytes = flat.to_csv(index=False, encoding="utf-8", lineterminator="
-").encode("utf-8")
+csv_text = flat.to_csv(index=False, encoding="utf-8")
+csv_bytes = csv_text.encode("utf-8")
 
 st.download_button(
     "Download flattened CSV",
