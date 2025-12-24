@@ -251,7 +251,13 @@ with st.sidebar:
 
     st.subheader("CSV reading")
     encoding = st.text_input("Encoding", value="utf-8")
-    skiprows = st.number_input("skiprows", min_value=0, value=0, step=1)
+    skiprows = st.number_input(
+        "skiprows (lines to skip at top)",
+        min_value=0,
+        value=1,
+        step=1,
+        help="Set to 1 to skip the first row (often a title line above the header).",
+    )
 
     delimiter_mode = st.selectbox("Delimiter", options=["Auto", "Manual"], index=0)
     manual_delimiter = st.text_input("Manual delimiter", value=",", disabled=(delimiter_mode != "Manual"))
@@ -382,3 +388,4 @@ with st.expander("Notes / Troubleshooting"):
         "- For very large files on Community Cloud, consider uploading `.csv.gz`.",
     ]
     st.markdown(chr(10).join(notes))
+
