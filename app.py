@@ -340,13 +340,12 @@ st.download_button(
 )
 
 with st.expander("Notes / Troubleshooting"):
-    st.markdown(
-        "- If a field uses single quotes (e.g., `{'positive': 1}`), strict JSON parsing fails; the app falls back to Python-literal parsing.
-"
-        "- If parsing fails for a cell, it becomes empty in the flattened output.
-"
-        "- For list columns (like `surfaced_articles`), widening can create many columns quickly—use **Max items** to cap width.
-"
-        "- For very large files on Community Cloud, consider uploading `.csv.gz`.
-"
-    )
+    notes = [
+        "- If a field uses single quotes (e.g., `{'positive': 1}`), strict JSON parsing fails; the app falls back to Python-literal parsing.",
+        "- If parsing fails for a cell, it becomes empty in the flattened output.",
+        "- For list columns (like `surfaced_articles`), widening can create many columns quickly—use **Max items** to cap width.",
+        "- For very large files on Community Cloud, consider uploading `.csv.gz`.",
+    ]
+    st.markdown("
+".join(notes))
+
